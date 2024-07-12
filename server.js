@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const axios = require('axios');
@@ -5,14 +6,15 @@ const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
-
 const app = express();
 app.use(bodyParser.json());
 
-const SECRET_KEY = 'bxctasRA5j3ZK7E67oljevClO5j8QilVEaf6eGLXMErbRZ3toiCa2QXbFjg4'; // Use a strong, unique key
+const SECRET_KEY = process.env.SECRET_KEY;
+const MONGO_URI = process.env.MONGO_URI;
+const FAST2SMS_API_KEY = process.env.FAST2SMS_API_KEY;
 
 // Connect to MongoDB
-mongoose.connect('mongodb://localhost:27017/myfast', {
+mongoose.connect(MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
@@ -25,16 +27,15 @@ const userSchema = new mongoose.Schema({
 });
 
 const User = mongoose.model('User', userSchema);
+
 const messageSchema = new mongoose.Schema({
   sender: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   receiver: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   message: String,
   timestamp: { type: Date, default: Date.now },
 });
+
 const Message = mongoose.model('Message', messageSchema);
-
-
-const FAST2SMS_API_KEY = 'bxctasRA5j3ZK7E67oljevClO5j8QilVEaf6eGLXMErbRZ3toiCa2QXbFjg4';
 
 let otpStore = {}; // This is a temporary storage, ideally, use a database
 
@@ -110,6 +111,7 @@ const authenticateToken = (req, res, next) => {
     next();
   });
 };
+
 // Update profile endpoint
 app.post('/update-profile', authenticateToken, async (req, res) => {
   const { name, email } = req.body;
@@ -144,8 +146,6 @@ app.use((req, res, next) => {
   next();
 });
 
-
-
 app.post('/send-message', authenticateToken, async (req, res) => {
   const { receiverId, message } = req.body;
   try {
@@ -176,8 +176,8 @@ app.get('/get-messages/:receiverId', authenticateToken, async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch messages', error });
   }
 });
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
-///
