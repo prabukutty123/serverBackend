@@ -122,7 +122,6 @@ app.post('/update-profile', authenticateToken, async (req, res) => {
     res.status(500).json({ message: 'Failed to update profile', error });
   }
 });
-
 // Endpoint to fetch user list excluding the logged-in user
 app.get('/user-list', authenticateToken, async (req, res) => {
   try {
