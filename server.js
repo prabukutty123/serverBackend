@@ -4,18 +4,23 @@ const axios = require('axios');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-
-
+const dotenv = require('dotenv');
 const app = express();
+dotenv.config();
+
+mongoose.set('strictQuery', true);
+
+mongoose
+  .connect('mongodb://localhost:27017/myfast')
+  .then(() => {
+    console.log('connected to db');
+  })
+  .catch((err) => {
+    console.log(err.message);
+  });
 app.use(bodyParser.json());
 
 const SECRET_KEY = 'bxctasRA5j3ZK7E67oljevClO5j8QilVEaf6eGLXMErbRZ3toiCa2QXbFjg4'; // Use a strong, unique key
-
-// Connect to MongoDB
-mongoose.connect('mongodb://localhost:27017/myfast', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
 
 const userSchema = new mongoose.Schema({
   phoneNumber: String,
