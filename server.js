@@ -1,69 +1,69 @@
 const express = require('express');
-const axios = require('axios');
-const cors = require('cors');
-const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
-const dotenv = require('dotenv');
-
-dotenv.config();
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const axios = require('axios');
 
 const app = express();
 app.use(bodyParser.json());
+app.use(cors());
 
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
+mongoose.connect('mongodb://localhost:27017/otp-auth', {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
 });
 
 const otpSchema = new mongoose.Schema({
-  phone: String,
-  otp: String,
-  createdAt: { type: Date, expires: 300, default: Date.now }
+    phoneNumber: String,
+    otp: String,
+    createdAt: { type: Date, expires: 300, default: Date.now }
 });
 
-const OTP = mongoose.model('OTP', otpSchema);
+const Otp = mongoose.model('Otp', otpSchema);
+
+const FAST2SMS_API_KEY = 'bxctasRA5j3ZK7E67oljevClO5j8QilVEaf6eGLXMErbRZ3toiCa2QXbFjg4';
 
 app.post('/send-otp', async (req, res) => {
-  const { phone } = req.body;
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const { phoneNumber } = req.body;
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-  try {
-    await axios.post('https://www.fast2sms.com/dev/bulkV2', {
-      route: 'v3',
-      sender_id: 'FTWSMS',
-      message: `Your OTP code is ${otp}`,
-      language: 'english',
-      flash: 0,
-      numbers: phone
-    }, {
-      headers: {
-        authorization: process.env.FAST2SMS_API_KEY,
-        'Content-Type': 'application/json'
-      }
-    });
+    await new Otp({ phoneNumber, otp }).save();
 
-    const newOTP = new OTP({ phone, otp });
-    await newOTP.save();
+    try {
+        const response = await axios.post('https://www.fast2sms.com/dev/bulkV2', {
+            route: 'q',
+            message: `Your OTP code is ${otp}`,
+            language: 'english',
+            flash: 0,
+            numbers: phoneNumber
+        }, {
+            headers: {
+                'authorization': FAST2SMS_API_KEY,
+                'Content-Type': 'application/json'
+            }
+        });
 
-    res.status(200).json({ message: 'OTP sent successfully' });
-  } catch (error) {
-    res.status(500).json({ message: 'Error sending OTP', error });
-  }
+        if (response.data.return) {
+            res.json({ success: true, message: 'OTP sent successfully' });
+        } else {
+            res.json({ success: false, message: 'Failed to send OTP' });
+        }
+    } catch (error) {
+        res.json({ success: false, message: 'Error sending OTP', error });
+    }
 });
 
 app.post('/verify-otp', async (req, res) => {
-  const { phone, otp } = req.body;
+    const { phoneNumber, otp } = req.body;
+    const record = await Otp.findOne({ phoneNumber, otp });
 
-  const validOTP = await OTP.findOne({ phone, otp });
-
-  if (validOTP) {
-    res.status(200).json({ message: 'OTP verified successfully' });
-  } else {
-    res.status(400).json({ message: 'Invalid OTP' });
-  }
+    if (record) {
+        res.json({ success: true, message: 'OTP verified successfully' });
+    } else {
+        res.json({ success: false, message: 'Invalid OTP' });
+    }
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+app.listen(3000, () => {
+    console.log('Server running on port 3000');
 });
