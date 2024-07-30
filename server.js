@@ -7,15 +7,9 @@ const axios = require('axios');
 const app = express();
 app.use(bodyParser.json());
 app.use(cors());
-
-mongoose.connect('mongodb://localhost:27017/otp-auth', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-}).then(() => {
-    console.log('Connected to MongoDB');
-}).catch((error) => {
-    console.error('Error connecting to MongoDB:', error);
-});
+mongoose.connect('mongodb://localhost:27017/mydataBase')
+  .then(() => console.log('Connected to MongoDB'))
+  .catch(err => console.error('Error connecting to MongoDB:', err));
 
 const otpSchema = new mongoose.Schema({
     phoneNumber: String,
