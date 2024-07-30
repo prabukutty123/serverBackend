@@ -11,12 +11,16 @@ app.use(cors());
 mongoose.connect('mongodb://localhost:27017/otp-auth', {
     useNewUrlParser: true,
     useUnifiedTopology: true
+}).then(() => {
+    console.log('Connected to MongoDB');
+}).catch((error) => {
+    console.error('Error connecting to MongoDB:', error);
 });
 
 const otpSchema = new mongoose.Schema({
     phoneNumber: String,
     otp: String,
-    createdAt: { type: Date, expires: 300, default: Date.now }
+    createdAt: { type: Date, expires: 300, default: Date.now }  // OTP expires in 5 minutes
 });
 
 const Otp = mongoose.model('Otp', otpSchema);
