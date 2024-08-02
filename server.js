@@ -114,15 +114,30 @@ app.post('/send-otp', async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 });
-app.post('/verify-otp', (req, res) => {
+app.post('/verify-otp', async (req, res) => {
   const { phoneNumber, otp } = req.body;
-  const storedOtp = otpStorage[phoneNumber];
 
-  if (storedOtp === otp) {
-    delete otpStorage[phoneNumber]; // OTP is valid, remove it from storage
-    res.json({ success: true, message: 'OTP verified successfully' });
-  } else {
-    res.status(400).json({ success: false, message: 'Invalid OTP' });
+  if (!phoneNumber || !otp) {
+    return res.status(400).json({ success: false, message: 'Phone number and OTP are required' });
+  }
+
+  try {
+    const record = await Otp.findOne({ phoneNumber, otp });
+
+    // Log the phone number and OTP for verification
+    console.log('Phone number:', phoneNumber);
+    console.log('Entered OTP:', otp);
+
+    if (record) {
+      res.json({ success: true, message: 'OTP verified successfully' });
+      console.log('Verification successful');
+    } else {
+      res.status(400).json({ success: false, message: 'Invalid OTP' });
+      console.log('Invalid OTP');
+    }
+  } catch (error) {
+    console.error('Error verifying OTP:', error);
+    res.status(500).json({ success: false, message: 'Error verifying OTP', error: error.message });
   }
 });
 
