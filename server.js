@@ -3,11 +3,12 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const axios = require('axios');
+const qs = require('qs');
 require('dotenv').config(); // Use environment variables
-
 const app = express();
 app.use(bodyParser.json());
 app.use(cors());
+const apiKey = 'bxctasRA5j3ZK7E67oljevClO5j8QilVEaf6eGLXMErbRZ3toiCa2QXbFjg4'; // Replace with your Fast2SMS API key
 
 mongoose.connect('mongodb://localhost:27017/mydatabase', {
   // useNewUrlParser: true,
@@ -80,68 +81,48 @@ const businesses = {
 };
 
 
-const FAST2SMS_API_KEY = process.env.FAST2SMS_API_KEY;
+// const FAST2SMS_API_KEY = process.env.FAST2SMS_API_KEY;
 
 app.post('/send-otp', async (req, res) => {
   const { phoneNumber } = req.body;
+  const otp = Math.floor(100000 + Math.random() * 900000).toString(); // Generate a 6-digit OTP
 
-  if (!phoneNumber) {
-    return res.status(400).json({ success: false, message: 'Phone number is required' });
-  }
-
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  const apiUrl = 'https://www.fast2sms.com/dev/bulkV2';
 
   try {
-    await new Otp({ phoneNumber, otp }).save();
-
-    const response = await axios.post('https://www.fast2sms.com/dev/bulkV2', {
-      route: 'q',
-      message: `Your OTP code is ${otp}`,
+    const response = await axios.post(apiUrl, qs.stringify({
+      route: 'otp',
+      sender_id: 'FSTSMS',
+      message: `Your OTP code is {{otp}}`,
+      variables_values: otp,
       language: 'english',
-      flash: 0,
-      numbers: phoneNumber
-    }, {
+      flash: '0',
+      numbers: phoneNumber,
+    }), {
       headers: {
-        'authorization': FAST2SMS_API_KEY,
-        'Content-Type': 'application/json'
-      }
+        authorization: apiKey,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
     });
 
-    if (response.data.return) {
-      res.json({ success: true, message: 'OTP sent successfully' });
-      console.log(res,"OTPEntered");
+    if (response.data.return === true) {
+      res.json({ success: true, message: 'OTP sent successfully', otp }); // Respond with the OTP for testing
     } else {
-      res.status(500).json({ success: false, message: 'Failed to send OTP' });
+      res.status(400).json({ success: false, message: 'Failed to send OTP' });
     }
   } catch (error) {
-    console.error('Error sending OTP:', error);
-    res.status(500).json({ success: false, message: 'Error sending OTP', error: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 });
-app.post('/verify-otp', async (req, res) => {
+app.post('/verify-otp', (req, res) => {
   const { phoneNumber, otp } = req.body;
+  const storedOtp = otpStorage[phoneNumber];
 
-  if (!phoneNumber || !otp) {
-    return res.status(400).json({ success: false, message: 'Phone number and OTP are required' });
-  }
-
-  try {
-    const record = await Otp.findOne({ phoneNumber, otp });
-
-    // Log the phone number and OTP for verification
-    console.log('Phone number:', phoneNumber);
-    console.log('Entered OTP:', otp);
-
-    if (record) {
-      res.json({ success: true, message: 'OTP verified successfully' });
-      console.log('Verification successful');
-    } else {
-      res.status(400).json({ success: false, message: 'Invalid OTP' });
-      console.log('Invalid OTP');
-    }
-  } catch (error) {
-    console.error('Error verifying OTP:', error);
-    res.status(500).json({ success: false, message: 'Error verifying OTP', error: error.message });
+  if (storedOtp === otp) {
+    delete otpStorage[phoneNumber]; // OTP is valid, remove it from storage
+    res.json({ success: true, message: 'OTP verified successfully' });
+  } else {
+    res.status(400).json({ success: false, message: 'Invalid OTP' });
   }
 });
 
