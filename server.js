@@ -8,13 +8,11 @@ app.use(bodyParser.json());
 
 const apiKey = 'bxctasRA5j3ZK7E67oljevClO5j8QilVEaf6eGLXMErbRZ3toiCa2QXbFjg4'; // Replace with your Fast2SMS API key
 const otpStorage = {}; // Temporary storage for OTPs
-
 app.post('/send-otp', async (req, res) => {
   const { phoneNumber } = req.body;
   const otp = Math.floor(100000 + Math.random() * 900000).toString(); // Generate a 6-digit OTP
 
   const apiUrl = 'https://www.fast2sms.com/dev/bulkV2';
-
   try {
     const response = await axios.post(apiUrl, qs.stringify({
       route: 'otp',
