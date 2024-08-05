@@ -9,16 +9,18 @@ const app = express();
 app.use(bodyParser.json());
 app.use(cors());
 
+// Connect to MongoDB
 mongoose.connect('mongodb://localhost:27017/mydatabase', {
-  // useNewUrlParser: true,
-  // useUnifiedTopology: true
+  useNewUrlParser: true,
+  useUnifiedTopology: true
 })
   .then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('Error connecting to MongoDB:', err));
 
+// OTP Schema
 const otpSchema = new mongoose.Schema({
-  phoneNumber: String,
-  otp: String,
+  phoneNumber: { type: String, required: true },
+  otp: { type: String, required: true },
   createdAt: { type: Date, expires: 300, default: Date.now }  // OTP expires in 5 minutes
 });
 
@@ -26,34 +28,25 @@ const Otp = mongoose.model('Otp', otpSchema);
 
 // Business Schema
 const businessSchema = new mongoose.Schema({
-  type: String,
-  name: String,
-  location: String,
+  type: { type: String, required: true },
+  name: { type: String, required: true },
+  location: { type: String, required: true }
 });
 
 const Business = mongoose.model('Business', businessSchema);
+
+// Address Schema
 const addressSchema = new mongoose.Schema({
-  addressLine1: {
-    type: String,
-    required: true,
-  },
-  addressLine2: String,
-  city: {
-    type: String,
-    required: true,
-  },
-  state: {
-    type: String,
-    required: true,
-  },
-  zipCode: {
-    type: String,
-    required: true,
-  },
+  addressLine1: { type: String, required: true },
+  addressLine2: { type: String },
+  city: { type: String, required: true },
+  state: { type: String, required: true },
+  zipCode: { type: String, required: true }
 });
 
 const Address = mongoose.model('Address', addressSchema);
 
+// BankDetails Schema
 const bankDetailsSchema = new mongoose.Schema({
   accountNumber: { type: String, required: true },
   bankName: { type: String, required: true },
@@ -62,26 +55,11 @@ const bankDetailsSchema = new mongoose.Schema({
 });
 
 const BankDetails = mongoose.model('BankDetails', bankDetailsSchema);
-const businesses = {
-  type1: [
-    { id: 1, name: 'Retail Shopping' },
-    { id: 2, name: 'Grocery & Daily Needs' },
-    { id: 3, name: 'Food & Beverages' },
-    { id: 4, name: 'Fuel' },
-    { id: 5, name: 'Art & Antiques' },
-    { id: 6, name: 'Travel' },
-    { id: 7, name: 'Agriculture' },
-    { id: 8, name: 'Hospitality' },
-  ],
-  type2: [
-    { id: 3, name: 'Business 3', location: 'Location 3' },
-    { id: 4, name: 'Business 4', location: 'Location 4' },
-  ],
-};
 
-
+// Fast2SMS API Key
 const FAST2SMS_API_KEY = process.env.FAST2SMS_API_KEY;
 
+// Send OTP Endpoint
 app.post('/send-otp', async (req, res) => {
   const { phoneNumber } = req.body;
 
@@ -111,7 +89,7 @@ app.post('/send-otp', async (req, res) => {
 
     if (response.data.return) {
       res.json({ success: true, message: 'OTP sent successfully' });
-      console.log(res, "OTPEntered");
+      console.log("OTP sent successfully");
     } else {
       res.status(500).json({ success: false, message: 'Failed to send OTP' });
     }
@@ -120,6 +98,8 @@ app.post('/send-otp', async (req, res) => {
     res.status(500).json({ success: false, message: 'Error sending OTP', error: error.message });
   }
 });
+
+// Verify OTP Endpoint
 app.post('/verify-otp', async (req, res) => {
   const { phoneNumber, otp } = req.body;
 
@@ -147,9 +127,26 @@ app.post('/verify-otp', async (req, res) => {
   }
 });
 
-// Endpoint to get businesses based on type
+// Endpoint to get businesses based on type (static)
 app.get('/api/businesses/:type', async (req, res) => {
   const { type } = req.params;
+  const businesses = {
+    type1: [
+      { id: 1, name: 'Retail Shopping' },
+      { id: 2, name: 'Grocery & Daily Needs' },
+      { id: 3, name: 'Food & Beverages' },
+      { id: 4, name: 'Fuel' },
+      { id: 5, name: 'Art & Antiques' },
+      { id: 6, name: 'Travel' },
+      { id: 7, name: 'Agriculture' },
+      { id: 8, name: 'Hospitality' },
+    ],
+    type2: [
+      { id: 3, name: 'Business 3', location: 'Location 3' },
+      { id: 4, name: 'Business 4', location: 'Location 4' },
+    ],
+  };
+
   try {
     let data;
     if (businesses[type]) {
@@ -173,6 +170,7 @@ app.get('/api/businesses-mongodb/:type', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch businesses from MongoDB' });
   }
 });
+
 // Endpoint to add a new business to MongoDB
 app.post('/api/businesses', async (req, res) => {
   try {
@@ -181,10 +179,12 @@ app.post('/api/businesses', async (req, res) => {
     await newBusiness.save();
     res.status(201).json(newBusiness);
   } catch (error) {
-    res.status(500).json({ message: 'Failed to save business', error });
+    console.error('Error saving business:', error);
+    res.status(500).json({ message: 'Failed to save business', error: error.message });
   }
 });
 
+// Endpoint to add a new address
 app.post('/api/addresses', async (req, res) => {
   try {
     const { addressLine1, addressLine2, city, state, zipCode } = req.body;
@@ -196,6 +196,8 @@ app.post('/api/addresses', async (req, res) => {
     res.status(500).json({ message: 'Failed to save address', error: error.message });
   }
 });
+
+// Endpoint to add new bank details
 app.post('/api/bank-details', async (req, res) => {
   try {
     const { accountNumber, bankName, branch, ifscCode } = req.body;
@@ -207,6 +209,7 @@ app.post('/api/bank-details', async (req, res) => {
     res.status(500).json({ message: 'Failed to save bank details', error: error.message });
   }
 });
-app.listen(3003, () => {
-  console.log('Server running on port 3003');
+
+app.listen(3004, () => {
+  console.log('Server running on port 3004');
 });
