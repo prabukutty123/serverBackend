@@ -11,8 +11,8 @@ app.use(cors());
 
 // Connect to MongoDB Database
 mongoose.connect('mongodb://localhost:27017/mydatabase', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
+  // useNewUrlParser: true,
+  // useUnifiedTopology: true
 })
   .then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('Error connecting to MongoDB:', err));
@@ -30,7 +30,7 @@ const Otp = mongoose.model('Otp', otpSchema);
 const businessSchema = new mongoose.Schema({
   type: { type: String, required: true },
   name: { type: String, required: true },
-  location: { type: String, required: true }
+  // location: { type: String, required: true }
 });
 
 const Business = mongoose.model('Business', businessSchema);
@@ -174,8 +174,8 @@ app.get('/api/businesses-mongodb/:type', async (req, res) => {
 // Endpoint to add a new business to MongoDB
 app.post('/api/businesses', async (req, res) => {
   try {
-    const { type, name, location } = req.body;
-    const newBusiness = new Business({ type, name, location });
+    const { type, name } = req.body;
+    const newBusiness = new Business({ type, name });
     await newBusiness.save();
     res.status(201).json(newBusiness);
   } catch (error) {
@@ -183,7 +183,6 @@ app.post('/api/businesses', async (req, res) => {
     res.status(500).json({ message: 'Failed to save business', error: error.message });
   }
 });
-
 // Endpoint to add a new address
 app.post('/api/addresses', async (req, res) => {
   try {
