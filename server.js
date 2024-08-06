@@ -236,5 +236,5 @@ app.post('/verify-aadhaar', async (req, res) => {
 });
 
 app.listen(3005, () => {
-  console.log('Server running on port 3004');
+  console.log('Server running  port 3005');
 });
