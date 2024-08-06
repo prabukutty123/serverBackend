@@ -210,6 +210,31 @@ app.post('/api/bank-details', async (req, res) => {
   }
 });
 
-app.listen(3004, () => {
+app.post('/verify-aadhaar', async (req, res) => {
+  const { aadhaarNumber } = req.body;
+
+  if (!aadhaarNumber) {
+    return res.status(400).json({ error: 'Aadhaar number is required' });
+  }
+
+  try {
+    const response = await axios.post(
+      'https://api.gridlines.io/v1/aadhaar-verification', // Replace with the actual Gridlines API endpoint
+      { aadhaar_number: aadhaarNumber },
+      {
+        headers: {
+          'Authorization': `Bearer ${process.env.GRIDLINES_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    res.json(response.data);
+  } catch (error) {
+    res.status(500).json({ error: error.response ? error.response.data : error.message });
+  }
+});
+
+app.listen(3003, () => {
   console.log('Server running on port 3004');
 });
