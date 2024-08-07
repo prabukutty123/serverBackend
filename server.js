@@ -55,9 +55,42 @@ const bankDetailsSchema = new mongoose.Schema({
 });
 
 const BankDetails = mongoose.model('BankDetails', bankDetailsSchema);
-
+const CASHFREE_APP_ID = process.env.CASHFREE_APP_ID;
+const CASHFREE_SECRET_KEY = process.env.CASHFREE_SECRET_KEY;
+const CASHFREE_KYC_URL = process.env.CASHFREE_KYC_URL;
 // Fast2SMS API Key
 const FAST2SMS_API_KEY = process.env.FAST2SMS_API_KEY;
+app.post('/verify-aadhaar', async (req, res) => {
+  const { aadhaarNumber, gstin, userName } = req.body;
+
+  try {
+      const response = await axios.post(CASHFREE_KYC_URL, {
+          aadhaarNumber: aadhaarNumber,
+          gstin: gstin,
+          userName: userName
+      }, {
+          headers: {
+              'x-client-id': CASHFREE_APP_ID,
+              'x-client-secret': CASHFREE_SECRET_KEY,
+              'Content-Type': 'application/json',
+          }
+      });
+
+      if (response.data.success) {
+          res.status(200).json({ success: true, message: 'Aadhaar verified successfully' });
+      } else {
+          res.status(400).json({ success: false, message: 'Verification failed', details: response.data });
+      }
+  } catch (error) {
+      if (error.response) {
+          res.status(error.response.status).json({ success: false, message: 'Error from Cashfree', details: error.response.data });
+      } else if (error.request) {
+          res.status(503).json({ success: false, message: 'No response received from Cashfree', details: error.request });
+      } else {
+          res.status(500).json({ success: false, message: 'Internal Server Error', details: error.message });
+      }
+  }
+});
 
 // Send OTP Endpoint
 app.post('/send-otp', async (req, res) => {
