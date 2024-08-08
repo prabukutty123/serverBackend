@@ -16,7 +16,6 @@ mongoose.connect('mongodb://localhost:27017/mydatabase', {
 })
   .then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('Error connecting to MongoDB:', err));
-
 // OTP Schema
 const otpSchema = new mongoose.Schema({
   phoneNumber: { type: String, required: true },
@@ -206,31 +205,6 @@ app.post('/api/bank-details', async (req, res) => {
   } catch (error) {
     console.error('Error saving bank details:', error);
     res.status(500).json({ message: 'Failed to save bank details', error: error.message });
-  }
-});
-
-app.post('/verify-aadhaar', async (req, res) => {
-  const { aadhaarNumber } = req.body;
-
-  if (!aadhaarNumber) {
-    return res.status(400).json({ error: 'Aadhaar number is required' });
-  }
-
-  try {
-    const response = await axios.post(
-      'https://api.gridlines.io/v1/aadhaar-verification', // Replace with the actual Gridlines API endpoint
-      { aadhaar_number: aadhaarNumber },
-      {
-        headers: {
-          'Authorization': `Bearer ${process.env.GRIDLINES_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-
-    res.json(response.data);
-  } catch (error) {
-    res.status(500).json({ error: error.response ? error.response.data : error.message });
   }
 });
 
