@@ -11,8 +11,8 @@ app.use(cors());
 
 // Connect to MongoDB Database
 mongoose.connect('mongodb://localhost:27017/mydatabase', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
+  // useNewUrlParser: true,
+  // useUnifiedTopology: true
 })
   .then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('Error connecting to MongoDB:', err));
@@ -234,6 +234,6 @@ app.post('/verify-aadhaar', async (req, res) => {
   }
 });
 
-app.listen(3008, () => {
-  console.log('Server running on port 3008');
+app.listen(3005, () => {
+  console.log('Server running on port 3005');
 });
