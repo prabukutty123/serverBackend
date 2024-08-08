@@ -209,5 +209,5 @@ app.post('/api/bank-details', async (req, res) => {
 });
 
 app.listen(3007, () => {
-  console.log('Server running on port 3007');
+  console.log('Server running  port 3007');
 });
