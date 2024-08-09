@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const axios = require('axios');
-require('dotenv').config(); // Use environment variables
+require('dotenv').config(); 
 
 const app = express();
 app.use(bodyParser.json());
@@ -209,5 +209,5 @@ app.post('/api/bank-details', async (req, res) => {
 });
 
 app.listen(3007, () => {
-  console.log('Server running  port 3007');
+  console.log('Server running port 3007');
 });
