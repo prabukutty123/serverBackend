@@ -29,7 +29,7 @@ const Otp = mongoose.model('Otp', otpSchema);
 const businessSchema = new mongoose.Schema({
   type: { type: String, required: true },
   name: { type: String, required: true },
-  location: { type: String, required: true }
+  // location: { type: String, required: true }
 });
 
 const Business = mongoose.model('Business', businessSchema);
