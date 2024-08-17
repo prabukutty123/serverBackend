@@ -141,14 +141,14 @@ app.get('/api/businesses/:type', async (req, res) => {
       { id: 8, name: 'Hospitality' },
     ],
     type2: [
-        { id: 1, name: 'Roaming Wellness Clinics', location: 'Location 3' },
-        { id: 2, name: 'Traveling Bookstores', location: 'Location 4' },
-        { id: 3, name: 'Traveling Photography', location: 'Location 4' },
+        { id: 1, name: 'Roaming Wellness Clinics', location: 'Location 1' },
+        { id: 2, name: 'Traveling Bookstores', location: 'Location 2' },
+        { id: 3, name: 'Traveling Photography', location: 'Location 3' },
         { id: 4, name: 'Mobile Tech Support', location: 'Location 4' },
-        { id: 5, name: 'Nomadic Real Estate', location: 'Location 4' },
-        { id: 6, name: 'Traveling Photography', location: 'Location 4' },
-        { id: 7, name: 'Traveling Photography', location: 'Location 4' },
-        { id: 8, name: 'Traveling Photography', location: 'Location 4' },
+        { id: 5, name: 'Nomadic Real Estate', location: 'Location 5' },
+        { id: 6, name: 'Traveling Photography', location: 'Location 6' },
+        { id: 7, name: 'Traveling Photography', location: 'Location 7' },
+        { id: 8, name: 'Traveling Photography', location: 'Location 8' },
     ],
   };
 
