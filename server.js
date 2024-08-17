@@ -109,7 +109,7 @@ app.post('/verify-otp', async (req, res) => {
   try {
     const record = await Otp.findOne({ phoneNumber, otp });
 
-    // Log the phone number and OTP for verification
+    // Log  phone number and OTP for verification
     console.log('Phone number:', phoneNumber);
     console.log('Entered OTP:', otp);
 
